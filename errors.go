@@ -27,18 +27,23 @@ func IsAuthError(err error) bool {
 	return err.Error() == "failed with status 401" || err.Error() == "failed with status 403"
 }
 
-// IsNotFoundErr check if error is 404 error
-func IsNotFoundErr(err error) bool {
+// IsCreditError check if error is 402 error
+func IsCreditError(err error) bool {
+	return err.Error() == "failed with status 402"
+}
+
+// IsNotFoundError check if error is 404 error
+func IsNotFoundError(err error) bool {
 	return err.Error() == "failed with status 404"
 }
 
-// IsRequestLimitErr check if error is 429 error
-func IsRequestLimitErr(err error) bool {
+// IsRequestLimitError check if error is 429 error
+func IsRequestLimitError(err error) bool {
 	return err.Error() == "failed with status 429"
 }
 
-// ValidationErr
-func ValidationErr(err error) map[string][]string {
+// ValidationErrors
+func ValidationErrors(err error) map[string][]string {
 	decoded := make(map[string]map[string]string)
 	if err := json.Unmarshal([]byte(err.Error()), &decoded); err == nil {
 		res := make(map[string][]string)

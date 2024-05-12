@@ -166,15 +166,20 @@ func main() {
         fmt.Println("You are not authorized or your account is deactivated!")
     }
 
-    if irnotifier.IsNotFoundErr(err) {
+    if irnotifier.IsCreditError(err) {
+        fmt.Println("Not enough credit!")
+    }
+
+
+    if irnotifier.IsNotFoundError(err) {
         fmt.Println("Record not found!")
     }
 
-    if irnotifier.IsRequestLimitErr(err) {
+    if irnotifier.IsRequestLimitError(err) {
         fmt.Println("Too many request on server. Please try again later!")
     }
 
-    if errors := irnotifier.ValidationErr(err); errors != nil {
+    if errors := irnotifier.ValidationErrors(err); errors != nil {
         fmt.Printf("Invalid input data: %+v\n", errors)
     }
 }
