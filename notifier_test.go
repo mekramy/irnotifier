@@ -29,7 +29,7 @@ func TestInquiry(t *testing.T) {
 
 func TestSent(t *testing.T) {
 	client := irnotifier.NewNotifier(key)
-	if res, err := client.Sent(1, irnotifier.PerPage50, irnotifier.SortSentAt, irnotifier.OrderAsc, "", "Hi", "", ""); err != nil {
+	if res, err := client.Sent(1, irnotifier.PerPage50, irnotifier.SortSentAt, irnotifier.OrderAsc, "", "MyMeta", "", "1402-03-31"); err != nil {
 		t.Error("error occurred ", err)
 	} else {
 		t.Logf("%+v", res)
@@ -38,8 +38,8 @@ func TestSent(t *testing.T) {
 
 func TestQueue(t *testing.T) {
 	client := irnotifier.NewNotifier(key)
-	if res, err := client.Queue("login", "+9890008125", "09366661244", "meta", "", time.Now(), time.Now().Add(5*time.Minute), map[string]string{}); err != nil {
-		if vErr := irnotifier.ValidationErr(err); vErr == nil {
+	if res, err := client.Queue("login", "", "09120003265", "", "", time.Now(), time.Now().Add(5*time.Minute), map[string]string{"code": "333333"}); err != nil {
+		if vErr := irnotifier.ValidationErrors(err); vErr == nil {
 			t.Error("error occurred ", err)
 		} else {
 			t.Errorf("Validation error: %+v", vErr)
@@ -52,7 +52,7 @@ func TestQueue(t *testing.T) {
 func TestReQueue(t *testing.T) {
 	client := irnotifier.NewNotifier(key)
 	if res, err := client.ReQueue("6640558a91bfe333529bef7a", "login", "", "09366661244", "meta", "", time.Now(), time.Now().Add(5*time.Minute), map[string]string{}); err != nil {
-		if vErr := irnotifier.ValidationErr(err); vErr == nil {
+		if vErr := irnotifier.ValidationErrors(err); vErr == nil {
 			t.Error("error occurred ", err)
 		} else {
 			t.Errorf("Validation error: %+v", vErr)
@@ -65,7 +65,7 @@ func TestReQueue(t *testing.T) {
 func TestUnQueue(t *testing.T) {
 	client := irnotifier.NewNotifier(key)
 	if res, err := client.UnQueue("6640558a91bfe333529bef7a"); err != nil {
-		if vErr := irnotifier.ValidationErr(err); vErr == nil {
+		if vErr := irnotifier.ValidationErrors(err); vErr == nil {
 			t.Error("error occurred ", err)
 		} else {
 			t.Errorf("Validation error: %+v", vErr)
