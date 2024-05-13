@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"ekramy.ir/irnotifier"
+	"github.com/mekramy/irnotifier"
 )
 
 const key = "WNJu3mzdvUX4T1fxK19JJ8v5BdavOk7Ez1iABa3mMUSXeEj2cvXLloRLBUiPRCp9dxe24CKyTubLleGB7UsBJV5U3jCBPyK9"
