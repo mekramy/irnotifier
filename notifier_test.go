@@ -7,11 +7,24 @@ import (
 	"github.com/mekramy/irnotifier"
 )
 
-const key = "WNJu3mzdvUX4T1fxK19JJ8v5BdavOk7Ez1iABa3mMUSXeEj2cvXLloRLBUiPRCp9dxe24CKyTubLleGB7UsBJV5U3jCBPyK9"
+const host = "http://127.0.0.1:8888"
+const id = "e47d0d70-dd82-4dc5-b80d-2f719311bdda"
+const key = "N0EBCZ0H6SCZ9JCULZJGHGRWJFIQNO2SLF7AGP5RYQP5YEJO6HVJTJ4WWET0VS5M"
 
-func TestInfo(t *testing.T) {
-	client := irnotifier.NewNotifier(key)
-	if res, err := client.Info(); err != nil {
+func notifier() irnotifier.Notifier {
+	return irnotifier.NewNotifier(key, host, irnotifier.V1)
+}
+
+func TestInformation(t *testing.T) {
+	if res, err := notifier().Information(); err != nil {
+		t.Error("error occurred ", err)
+	} else {
+		t.Logf("%+v", res)
+	}
+}
+
+func TestStatistic(t *testing.T) {
+	if res, err := notifier().Statistic(nil); err != nil {
 		t.Error("error occurred ", err)
 	} else {
 		t.Logf("%+v", res)
@@ -19,17 +32,7 @@ func TestInfo(t *testing.T) {
 }
 
 func TestInquiry(t *testing.T) {
-	client := irnotifier.NewNotifier(key)
-	if res, err := client.Inquiry("663a165868d199304c0db6eb"); err != nil {
-		t.Error("error occurred ", err)
-	} else {
-		t.Logf("%+v", res)
-	}
-}
-
-func TestSent(t *testing.T) {
-	client := irnotifier.NewNotifier(key)
-	if res, err := client.Sent(1, irnotifier.PerPage50, irnotifier.SortSentAt, irnotifier.OrderAsc, "", "MyMeta", "", "1402-03-31"); err != nil {
+	if res, err := notifier().Inquiry(id); err != nil {
 		t.Error("error occurred ", err)
 	} else {
 		t.Logf("%+v", res)
@@ -37,40 +40,90 @@ func TestSent(t *testing.T) {
 }
 
 func TestQueue(t *testing.T) {
-	client := irnotifier.NewNotifier(key)
-	if res, err := client.Queue("login", "", "09120003265", "", "", time.Now(), time.Now().Add(5*time.Minute), map[string]string{"code": "333333"}); err != nil {
-		if vErr := irnotifier.ValidationErrors(err); vErr == nil {
-			t.Error("error occurred ", err)
-		} else {
-			t.Errorf("Validation error: %+v", vErr)
-		}
+	params := irnotifier.QueueParameter().
+		To("09121230004").
+		Metadata("test").
+		Pattern("test").
+		SendAt(time.Now()).
+		Expiration(time.Now().Add(time.Minute*5)).
+		AddParameter("name", "John Doe").
+		AddParameter("number", "123").
+		AddParameter("date", "Jun")
+	if res, err := notifier().Queue(params); err != nil {
+		t.Error("error occurred ", err)
 	} else {
-		t.Logf("%+v", res)
+		t.Logf("%s", res)
 	}
 }
 
 func TestReQueue(t *testing.T) {
-	client := irnotifier.NewNotifier(key)
-	if res, err := client.ReQueue("6640558a91bfe333529bef7a", "login", "", "09366661244", "meta", "", time.Now(), time.Now().Add(5*time.Minute), map[string]string{}); err != nil {
-		if vErr := irnotifier.ValidationErrors(err); vErr == nil {
-			t.Error("error occurred ", err)
-		} else {
-			t.Errorf("Validation error: %+v", vErr)
-		}
+	params := irnotifier.QueueParameter().
+		To("09121230000").
+		Metadata("test").
+		Pattern("test").
+		SendAt(time.Now()).
+		Expiration(time.Now().Add(time.Minute*5)).
+		AddParameter("name", "John Doe").
+		AddParameter("number", "123").
+		AddParameter("date", "Jun")
+	if res, err := notifier().Requeue("e610ca06-a98c-48b5-aeb1-732094af5620", params); err != nil {
+		t.Error("error occurred ", err)
 	} else {
-		t.Logf("%+v", res)
+		t.Logf("%v", res)
 	}
 }
 
-func TestUnQueue(t *testing.T) {
-	client := irnotifier.NewNotifier(key)
-	if res, err := client.UnQueue("6640558a91bfe333529bef7a"); err != nil {
-		if vErr := irnotifier.ValidationErrors(err); vErr == nil {
-			t.Error("error occurred ", err)
-		} else {
-			t.Errorf("Validation error: %+v", vErr)
-		}
+func TestDequeue(t *testing.T) {
+	if res, err := notifier().Dequeue("1ad7a837-7089-4789-a15a-23c2501a1551"); err != nil {
+		t.Error("error occurred ", err)
 	} else {
-		t.Logf("%+v", res)
+		t.Logf("%v", res)
+	}
+}
+
+func TestSuspend(t *testing.T) {
+	if res, err := notifier().Suspend("Hi", true); err != nil {
+		t.Error("error occurred ", err)
+	} else {
+		t.Logf("%d", res)
+	}
+}
+
+func TestResume(t *testing.T) {
+	if res, err := notifier().Resume(""); err != nil {
+		t.Error("error occurred ", err)
+	} else {
+		t.Logf("%d", res)
+	}
+}
+
+func TestDequeueAll(t *testing.T) {
+	params := irnotifier.DequeueParameter().
+		Receiver("09121230004").
+		Metadata("test").
+		Number("123").
+		Pattern("test").
+		From(time.Now()).
+		To(time.Now().Add(time.Minute * 5))
+	if res, err := notifier().DequeueAll(params); err != nil {
+		t.Error("error occurred ", err)
+	} else {
+		t.Logf("%v", res)
+	}
+}
+
+func TestFail(t *testing.T) {
+	if res, err := notifier().FailList(nil); err != nil {
+		t.Error("error occurred ", err)
+	} else {
+		t.Logf("%v", res.Total)
+	}
+}
+
+func TestSent(t *testing.T) {
+	if res, err := notifier().SentList(nil); err != nil {
+		t.Error("error occurred ", err)
+	} else {
+		t.Logf("%v", res.Total)
 	}
 }

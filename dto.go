@@ -5,44 +5,64 @@ import (
 )
 
 type Report struct {
-	ID    string `json:"id"`
-	Pages int    `json:"pages"`
-	Cost  int    `json:"cost"`
-	Meta  string `json:"meta"`
+	Id       string  `json:"id"`
+	Metadata *string `json:"metadata"`
+	Pages    int     `json:"pages"`
+	Cost     int     `json:"cost"`
 }
 
-type ClientInfo struct {
-	Name     string            `json:"name"`
-	Balance  int64             `json:"balance"`
-	Queued   int64             `json:"queued"`
-	Pendings int64             `json:"pendings"`
-	Numbers  map[string]int    `json:"numbers"`
-	Patterns map[string]string `json:"patterns"`
+type Information struct {
+	Name     string   `json:"name"`
+	Balance  int64    `json:"balance"`
+	Numbers  []string `json:"numbers"`
+	Patterns []string `json:"patterns"`
 }
 
-type Message struct {
-	ID        string    `json:"_id"`
+type Statistics struct {
+	Queues    int64 `json:"queues"`
+	Suspends  int64 `json:"suspends"`
+	Pendings  int64 `json:"pendings"`
+	Inquiries int64 `json:"inquiries"`
+	Fails     int64 `json:"fails"`
+	Sent      int64 `json:"sent"`
+}
+
+type FailMessage struct {
+	Id         string     `json:"id"`
+	State      FailStatus `json:"state"`
+	Number     string     `json:"number"`
+	Key        string     `json:"pattern"`
+	Title      string     `json:"title"`
+	LastTry    *time.Time `json:"last_try"`
+	Receiver   string     `json:"receiver"`
+	Metadata   *string    `json:"metadata"`
+	SendAt     time.Time  `json:"send_at"`
+	Expiration time.Time  `json:"expiration"`
+}
+
+type SentMessage struct {
+	Id        string    `json:"id"`
 	MessageId int64     `json:"message_id"`
+	Number    string    `json:"number"`
+	Key       string    `json:"pattern"`
 	Title     string    `json:"title"`
-	From      string    `json:"from"`
-	To        string    `json:"to"`
-	Meta      string    `json:"meta"`
 	Message   string    `json:"message"`
-	State     string    `json:"state"`
 	Pages     int       `json:"pages"`
-	Cost      int       `json:"cost"`
-	SentAt    time.Time `json:"sent_at"`
+	Total     int       `json:"total"`
+	Receiver  string    `json:"receiver"`
+	Metadata  *string   `json:"metadata"`
+	SendAt    time.Time `json:"send_at"`
 }
 
-type SearchResult struct {
-	Search   string    `json:"search"`
-	Sort     string    `json:"sort"`
-	Order    string    `json:"order"`
-	Limit    int       `json:"limit"`
-	Page     int       `json:"page"`
-	Pages    int       `json:"pages"`
-	From     int       `json:"from"`
-	To       int       `json:"to"`
-	Total    int       `json:"total"`
-	Messages []Message `json:"data"`
+type SearchResult[T any] struct {
+	Search   string `json:"search"`
+	Sort     string `json:"sort"`
+	Order    string `json:"order"`
+	Limit    int    `json:"limit"`
+	Page     int    `json:"page"`
+	Pages    int    `json:"pages"`
+	From     int    `json:"from"`
+	To       int    `json:"to"`
+	Total    int    `json:"total"`
+	Messages []T    `json:"data"`
 }
