@@ -50,16 +50,6 @@ func (query *QueueParams) Pattern(pattern string) *QueueParams {
 	return query
 }
 
-func (query *QueueParams) Suspend(suspend bool) *QueueParams {
-	query.suspend = suspend
-	return query
-}
-
-func (query *QueueParams) Metadata(metadata string) *QueueParams {
-	query.metadata = &metadata
-	return query
-}
-
 func (query *QueueParams) SendAt(sendAt time.Time) *QueueParams {
 	query.sendAt = sendAt
 	return query
@@ -67,6 +57,16 @@ func (query *QueueParams) SendAt(sendAt time.Time) *QueueParams {
 
 func (query *QueueParams) Expiration(expiration time.Time) *QueueParams {
 	query.expiration = expiration
+	return query
+}
+
+func (query *QueueParams) Suspend(suspend bool) *QueueParams {
+	query.suspend = suspend
+	return query
+}
+
+func (query *QueueParams) Metadata(metadata string) *QueueParams {
+	query.metadata = &metadata
 	return query
 }
 
