@@ -18,6 +18,7 @@ type QueueParams struct {
 	params     map[string]string
 	number     *string
 	pattern    string
+	suspend    bool
 }
 
 func (query QueueParams) ToJson() ([]byte, error) {
@@ -30,6 +31,7 @@ func (query QueueParams) ToJson() ([]byte, error) {
 		"parameters": query.params,
 		"number":     query.number,
 		"pattern":    query.pattern,
+		"suspend":    query.suspend,
 	})
 }
 
@@ -45,6 +47,11 @@ func (query *QueueParams) From(from string) *QueueParams {
 
 func (query *QueueParams) Pattern(pattern string) *QueueParams {
 	query.pattern = pattern
+	return query
+}
+
+func (query *QueueParams) Suspend(suspend bool) *QueueParams {
+	query.suspend = suspend
 	return query
 }
 

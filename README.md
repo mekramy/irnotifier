@@ -1,47 +1,208 @@
-# IrNotifier API SDK
+# IrNotifier API SDK Documentation
 
-## Create Notifier Instance
+## Overview
+
+IrNotifier is a Go library for sending text SMS messages. This documentation provides an overview of the functions and interfaces available in the library, along with examples to help you get started.
+
+## Installation
+
+To install the library, use the following command:
+
+```sh
+go get github.com/mekramy/irnotifier
+```
+
+## Creating a Notifier Instance
+
+To create a new notifier instance, use the `NewNotifier` function:
 
 ```go
 package main
+
 import "github.com/mekramy/irnotifier"
 
 func main() {
-    client := irnotifier.NewNotifier(myApiKey)
+    client := irnotifier.NewNotifier("your-api-key", "https://irnotifier.ir", irnotifier.V1)
 }
 ```
+
+## Interfaces
+
+### Notifier Interface
+
+The `Notifier` interface defines the methods available for interacting with the IrNotifier API.
+
+```go
+type Notifier interface {
+    IsValidRequest(authHeader string) bool
+    ParseReport(body []byte) (*Report, error)
+    Information() (*Information, error)
+    Statistic(metadata *string) (*Statistics, error)
+    Inquiry(id string) (MessageStatus, error)
+    Queue(parameter *QueueParams) (string, error)
+    Requeue(id string, parameter *QueueParams) (bool, error)
+    Dequeue(id string) (bool, error)
+    Suspend(metadata string, force bool) (int64, error)
+    Resume(metadata string) (int64, error)
+    DequeueAll(parameter *DequeueParams) (int64, error)
+    FailList(parameter *FailParams) (*SearchResult[FailMessage], error)
+    SentList(parameter *SentParams) (*SearchResult[SentMessage], error)
+}
+```
+
+## Functions
+
+### IsValidRequest
+
+Checks if the request authorization header is valid.
+
+```go
+func (notifier irNotifier) IsValidRequest(authHeader string) bool
+```
+
+### ParseReport
+
+Parses a delivery report sent by POST method from irnotifier.ir.
+
+```go
+func (notifier irNotifier) ParseReport(body []byte) (*Report, error)
+```
+
+### Information
+
+Gets client information.
+
+```go
+func (notifier irNotifier) Information() (*Information, error)
+```
+
+### Statistic
+
+Gets client statistics.
+
+```go
+func (notifier irNotifier) Statistic(metadata *string) (*Statistics, error)
+```
+
+### Inquiry
+
+Gets the status of a message.
+
+```go
+func (notifier irNotifier) Inquiry(id string) (MessageStatus, error)
+```
+
+### Queue
+
+Sends a new message.
+
+```go
+func (notifier irNotifier) Queue(parameter *QueueParams) (string, error)
+```
+
+### Requeue
+
+Updates a queued message.
+
+```go
+func (notifier irNotifier) Requeue(id string, parameter *QueueParams) (bool, error)
+```
+
+### Dequeue
+
+Deletes a queued message.
+
+```go
+func (notifier irNotifier) Dequeue(id string) (bool, error)
+```
+
+### Suspend
+
+Suspends queued messages.
+
+```go
+func (notifier irNotifier) Suspend(metadata string, force bool) (int64, error)
+```
+
+### Resume
+
+Resumes suspended messages.
+
+```go
+func (notifier irNotifier) Resume(metadata string) (int64, error)
+```
+
+### DequeueAll
+
+Deletes all queued messages.
+
+```go
+func (notifier irNotifier) DequeueAll(parameter *DequeueParams) (int64, error)
+```
+
+### FailList
+
+Gets a list of failed messages.
+
+```go
+func (notifier irNotifier) FailList(parameter *FailParams) (*SearchResult[FailMessage], error)
+```
+
+### SentList
+
+Gets a list of sent messages.
+
+```go
+func (notifier irNotifier) SentList(parameter *SentParams) (*SearchResult[SentMessage], error)
+```
+
+## Examples
 
 ### Handle Message Report
 
 ```go
 package controllers
 
+import (
+    "github.com/mekramy/irnotifier"
+    "net/http"
+)
+
+var client = irnotifier.NewNotifier("your-api-key", "https://irnotifier.ir", irnotifier.V1)
+
 // POST /callback/sms
-func HandleSMSReport(ctx http.RequestContext) error {
-    // Check if request is valid
-    if !client.IsValidRequest(ctx.Headers.Get("Authorization")) {
-        return ctx.SendStatus(401)
+func HandleSMSReport(w http.ResponseWriter, r *http.Request) {
+    if !client.IsValidRequest(r.Header.Get("Authorization")) {
+        http.Error(w, "Unauthorized", http.StatusUnauthorized)
+        return
     }
 
-    if report, err := client.ParseReport(ctx.Body); err != nil {
-        log.Log(err)
-        return ctx.SendStatus(500)
+    body, _ := io.ReadAll(r.Body)
+    if report, err := client.ParseReport(body); err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
     } else {
         // Handle report result ...
-        return ctx.SendStatus(200)
+        w.WriteHeader(http.StatusOK)
     }
 }
 ```
 
-### Get Account Balance And Information
+### Get Account Balance and Information
 
 ```go
+package main
+
+import (
+    "github.com/mekramy/irnotifier"
+    "log"
+)
 
 func main() {
-    if info, err := client.Info(); err != nil {
+    client := irnotifier.NewNotifier("your-api-key", "https://irnotifier.ir", irnotifier.V1)
+    if info, err := client.Information(); err != nil {
         log.Fatal(err)
     } else {
-        log.Logf("Your Balance Is: %d, %d Queued, %d Pendings\n", info.Balance, info.Queued, info.Pendings)
+        log.Printf("Your Balance Is: %d, %d Queued, %d Pendings\n", info.Balance, info.Queued, info.Pendings)
     }
 }
 ```
@@ -49,38 +210,43 @@ func main() {
 ### Get Message Status
 
 ```go
+package main
+
+import (
+    "github.com/mekramy/irnotifier"
+    "log"
+)
 
 func main() {
+    client := irnotifier.NewNotifier("your-api-key", "https://irnotifier.ir", irnotifier.V1)
     if res, err := client.Inquiry("6640558a91bfe333529bef7a"); err != nil {
-        if irnotifier.IsNotFoundErr(err){
-            log.Log("Message not found!")
-        }else{
+        if irnotifier.IsNotFoundError(err) {
+            log.Println("Message not found!")
+        } else {
             log.Fatal(err)
         }
     } else {
-        log.Logf("Message Status: %s\n", res)
+        log.Printf("Message Status: %s\n", res)
     }
 }
 ```
 
-### Get Message Sent List
+### Get Sent Message List
 
 ```go
+package main
+
+import (
+    "github.com/mekramy/irnotifier"
+    "log"
+)
 
 func main() {
-    if res, err := client.Sent(
-        1,
-        irnotifier.PerPage50,
-        irnotifier.SortSentAt,
-        irnotifier.OrderAsc,
-        "0912",
-        "My Meta Filter",
-        "1402-01-01",
-        "1402-03-31",
-    ); err != nil {
+    client := irnotifier.NewNotifier("your-api-key", "https://irnotifier.ir", irnotifier.V1)
+    if res, err := client.SentList(nil); err != nil {
         log.Fatal(err)
     } else {
-        log.Log(res)
+        log.Println(res)
     }
 }
 ```
@@ -88,21 +254,27 @@ func main() {
 ### Schedule Message Send
 
 ```go
+package main
+
+import (
+    "github.com/mekramy/irnotifier"
+    "log"
+    "time"
+)
 
 func main() {
-    if id, err := client.Queue(
-        "login",
-        "",
-        "09120001122",
-        "metadata",
-        "https://mysite.com/sms-callback",
-        time.Now(),
-        time.Now().Add(5*time.Minute),
-        map[string]string{"code": "12345"},
-    ); err != nil {
+    client := irnotifier.NewNotifier("your-api-key", "https://irnotifier.ir", irnotifier.V1)
+    params := irnotifier.QueueParameter().
+        To("09120001122").
+        Metadata("test").
+        Pattern("test").
+        SendAt(time.Now()).
+        Expiration(time.Now().Add(5 * time.Minute)).
+        AddParameter("code", "12345")
+    if id, err := client.Queue(params); err != nil {
         log.Fatal(err)
     } else {
-        log.Logf("Message scheduled with %s id\n", id)
+        log.Printf("Message scheduled with %s id\n", id)
     }
 }
 ```
@@ -110,22 +282,27 @@ func main() {
 ### Update Scheduled Message Send
 
 ```go
+package main
+
+import (
+    "github.com/mekramy/irnotifier"
+    "log"
+    "time"
+)
 
 func main() {
-    if ok, err := client.ReQueue(
-        "6640558a91bfe333529bef7a",
-        "login",
-        "",
-        "09120003340",
-        "",
-        "https://mysite.com/sms-callback",
-        time.Now(),
-        time.Now().Add(5*time.Minute),
-        map[string]string{"code": "12345"},
-    ); err != nil {
+    client := irnotifier.NewNotifier("your-api-key", "https://irnotifier.ir", irnotifier.V1)
+    params := irnotifier.QueueParameter().
+        To("09120003340").
+        Metadata("test").
+        Pattern("test").
+        SendAt(time.Now()).
+        Expiration(time.Now().Add(5 * time.Minute)).
+        AddParameter("code", "12345")
+    if ok, err := client.Requeue("6640558a91bfe333529bef7a", params); err != nil {
         log.Fatal(err)
     } else {
-        log.Log("Message scheduled updated")
+        log.Println("Message scheduled updated")
     }
 }
 ```
@@ -133,54 +310,69 @@ func main() {
 ### Delete Scheduled Message
 
 ```go
+package main
+
+import (
+    "github.com/mekramy/irnotifier"
+    "log"
+)
 
 func main() {
-    if ok, err := client.UnQueue("6640558a91bfe333529bef7a"); err != nil {
+    client := irnotifier.NewNotifier("your-api-key", "https://irnotifier.ir", irnotifier.V1)
+    if ok, err := client.Dequeue("6640558a91bfe333529bef7a"); err != nil {
         log.Fatal(err)
     } else {
-        log.Log("Message scheduled deleted")
+        log.Println("Message scheduled deleted")
     }
 }
 ```
 
 ## Error Handling
 
+IrNotifier provides several helper functions to handle different types of errors.
+
 ```go
+package main
+
+import (
+    "github.com/mekramy/irnotifier"
+    "log"
+)
 
 func main() {
+    client := irnotifier.NewNotifier("your-api-key", "https://irnotifier.ir", irnotifier.V1)
     err := client.DoSomeThing()
 
     if irnotifier.IsAPIError(err) {
-        fmt.Println("Something wrong on irnotifier.ir api server!")
+        log.Println("Something wrong on irnotifier.ir API server!")
     }
 
     if irnotifier.IsServerError(err) {
-        fmt.Println("Error 500 on server!")
+        log.Println("Error 500 on server!")
     }
 
     if irnotifier.IsUnavailableError(err) {
-        fmt.Println("Under maintenance!")
+        log.Println("Under maintenance!")
     }
 
     if irnotifier.IsAuthError(err) {
-        fmt.Println("You are not authorized or your account is deactivated!")
+        log.Println("You are not authorized or your account is deactivated!")
     }
 
     if irnotifier.IsCreditError(err) {
-        fmt.Println("Not enough credit!")
+        log.Println("Not enough credit!")
     }
 
-
     if irnotifier.IsNotFoundError(err) {
-        fmt.Println("Record not found!")
+        log.Println("Record not found!")
     }
 
     if irnotifier.IsRequestLimitError(err) {
-        fmt.Println("Too many request on server. Please try again later!")
+        log.Println("Too many requests on server. Please try again later!")
     }
 
     if errors := irnotifier.ValidationErrors(err); errors != nil {
-        fmt.Printf("Invalid input data: %+v\n", errors)
+        log.Printf("Invalid input data: %+v\n", errors)
     }
 }
 ```
