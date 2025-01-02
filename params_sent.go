@@ -12,7 +12,7 @@ func SentParameter() *SentParams {
 type SentParams struct {
 	page     int
 	limit    Limit
-	sort     FailSort
+	sort     SentSort
 	order    Order
 	search   string
 	pattern  string
@@ -35,38 +35,47 @@ func (params SentParams) ToJson() ([]byte, error) {
 	})
 }
 
-func (param *SentParams) Page(page int) {
+func (param *SentParams) Page(page int) *SentParams {
 	param.page = page
+	return param
 }
 
-func (param *SentParams) Limit(limit Limit) {
+func (param *SentParams) Limit(limit Limit) *SentParams {
 	param.limit = limit
+	return param
 }
 
-func (param *SentParams) Sort(sort FailSort) {
+func (param *SentParams) Sort(sort SentSort) *SentParams {
 	param.sort = sort
+	return param
 }
 
-func (param *SentParams) Order(order Order) {
+func (param *SentParams) Order(order Order) *SentParams {
 	param.order = order
+	return param
 }
 
-func (param *SentParams) Search(search string) {
+func (param *SentParams) Search(search string) *SentParams {
 	param.search = search
+	return param
 }
 
-func (param *SentParams) Pattern(pattern string) {
+func (param *SentParams) Pattern(pattern string) *SentParams {
 	param.pattern = pattern
+	return param
 }
 
-func (param *SentParams) Metadata(metadata string) {
+func (param *SentParams) Metadata(metadata string) *SentParams {
 	param.metadata = metadata
+	return param
 }
 
-func (param *SentParams) From(from time.Time) {
+func (param *SentParams) From(from time.Time) *SentParams {
 	param.from = &from
+	return param
 }
 
-func (param *SentParams) To(to time.Time) {
+func (param *SentParams) To(to time.Time) *SentParams {
 	param.to = &to
+	return param
 }

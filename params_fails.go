@@ -37,42 +37,52 @@ func (params FailParams) ToJson() ([]byte, error) {
 	})
 }
 
-func (param *FailParams) Page(page int) {
+func (param *FailParams) Page(page int) *FailParams {
 	param.page = page
+	return param
 }
 
-func (param *FailParams) Limit(limit Limit) {
+func (param *FailParams) Limit(limit Limit) *FailParams {
 	param.limit = limit
+	return param
 }
 
-func (param *FailParams) Sort(sort FailSort) {
+func (param *FailParams) Sort(sort FailSort) *FailParams {
 	param.sort = sort
+	return param
 }
 
-func (param *FailParams) Order(order Order) {
+func (param *FailParams) Order(order Order) *FailParams {
 	param.order = order
+	return param
 }
 
-func (param *FailParams) Search(search string) {
+func (param *FailParams) Search(search string) *FailParams {
 	param.search = search
+	return param
 }
 
-func (param *FailParams) State(state FailStatus) {
+func (param *FailParams) State(state FailStatus) *FailParams {
 	param.state = state
+	return param
 }
 
-func (param *FailParams) Pattern(pattern string) {
+func (param *FailParams) Pattern(pattern string) *FailParams {
 	param.pattern = pattern
+	return param
 }
 
-func (param *FailParams) Metadata(metadata string) {
+func (param *FailParams) Metadata(metadata string) *FailParams {
 	param.metadata = metadata
+	return param
 }
 
-func (param *FailParams) From(from time.Time) {
+func (param *FailParams) From(from time.Time) *FailParams {
 	param.from = &from
+	return param
 }
 
-func (param *FailParams) To(to time.Time) {
+func (param *FailParams) To(to time.Time) *FailParams {
 	param.to = &to
+	return param
 }
